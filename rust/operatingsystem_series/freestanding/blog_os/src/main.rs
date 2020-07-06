@@ -28,6 +28,8 @@ fn panic(_info: &PanicInfo) -> !{
 //By compiling for our host triple, the Rust compiler and 
 // the linker assume that there is an underlying operating system such as Linux or
 //  Windows that use the C runtime by default, which causes the linker errors
+
+//added target for compilation thumbv7em-none-eabihf
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     loop {}
