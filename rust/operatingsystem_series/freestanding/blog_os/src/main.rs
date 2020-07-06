@@ -1,4 +1,8 @@
 #![no_std]
-fn main() {
-    println!("Hello, world!");
+
+use core::panic::PanicInfo;
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> !{
+    loop{}
 }
+fn main() {}
