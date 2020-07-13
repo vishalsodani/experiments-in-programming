@@ -3,7 +3,7 @@ input = [3, 7, 14, 15, 19]
 bucket = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
 
 def hash_1(x):
-    return (x-1)  % 6
+    return x  % 11 
 
 def hash_2(x):
     return (x * 2) % 6 
