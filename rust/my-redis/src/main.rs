@@ -1,16 +1,44 @@
-use mini_redis::{client, Result};
+use tokio::net::{TcpListener, TcpStream};
+use mini_redis::{Connection, Frame};
+
 #[tokio::main]
-pub async fn main() -> Result<()> {
-    //redis runs on 6379 which was running on my computer; had to shutdown
-    //to enable mini-redis-server on 6379
-    let mut client = client::connect("127.0.0.1:6379").await?;
+async fn main(){
+    let mut listener = TcpListener::bind("127.0.0.1:6379").await.unwrap();
 
-    client.set("hello", "world".into()).await?;
+    loop {
+        let (socket, _) = listener.accept().await.unwrap();
 
-    let result = client.get("hello").await?;
+        tokio::spawn(async move {
+            process(socket).await;
+        });
+        
+    }
+}
 
-    println!("answer from server {:?}", result);
+async fn process(socket: TcpStream){
+    use mini_redis::Command::{self, Get, Set};
+    use std::collections::HashMap;
 
+    let mut db = HashMap::new();
 
-    Ok(())
+    let mut connection = Connection::new(socket);
+
+    while let Some(frame) = connection.read_frame().await.unwrap() {
+
+        let response = match Command::from_frame(frame).unwrap() {
+            Set(cmd) => {
+                db.insert(cmd.key().to_string(), cmd.value().clone());
+                Frame::Simple("OK".to_string())
+            }
+            Get(cmd) => {
+                if let Some(value) = db.get(cmd.key()) {
+                    Frame::Bulk(value.clone())
+                } else {
+                    Frame::Null
+                }
+            }
+            cmd => panic!("unimplemented {:?}", cmd),
+        };
+        connection.write_frame(&response).await.unwrap();
+    }
 }
