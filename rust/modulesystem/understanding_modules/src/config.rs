@@ -1,3 +1,3 @@
-fn printconfig(){
+pub fn printconfig(){
     println!("print config");
 }
